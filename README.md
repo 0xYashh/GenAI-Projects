@@ -35,5 +35,5 @@ A CLI tool powered by Google's Gemini API to create personalized study roadmaps.
    pip install -r requirements.txt
 3. Create .env file :
   ```bash
-  GEMINI_API_KEY = your_gemini_api_key.
+   GEMINI_API_KEY = your_gemini_api_key.
 
