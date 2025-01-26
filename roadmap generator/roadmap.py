@@ -1,32 +1,47 @@
 import os
 import google.generativeai as genai
 from dotenv import load_dotenv
+from rich.console import Console
 
+console = Console()
 load_dotenv()
 genai.configure(api_key = os.getenv('GEMINI_API_KEY'))
 
-def generate_roadmap(subjects,hours,deadlines):
-    prompt = f"""
-    Create a study roadmap with:
-    - Subjects: {subjects}
-    - Study hours/day: {hours} hours
-    - Deadlines: {deadlines}
+def generate_roadmap(user_prompt):
+    system_prompt = f"""
+You are an expert study planner. Create a daily roadmap based on this request:
+"{user_prompt}"
 
-    Rules:
-    1. Allocate ALL {hours} hours every day.
-    2. Spread topics until the deadline ({deadlines}), not just a few days.
-    3. Include time for revision, exercises, and projects.
-    4. Format as bullet points with Day X, Topics, Time, Priority.
-    """
+**Strict Rules:**
+1. Time Allocation:
+   - Fully utilize all specified daily hours/day)
+   - Split time between theory (40%), practice (40%), and revision (20%)
+
+2. Content Structure:
+   - Follow logical progression: Foundations → Core Concepts → Advanced Topics
+   - Ensure all mentioned subjects/topics are covered
+   - Include concrete exercises/projects for practical application
+
+3. Format Requirements:
+   - Plain text format (NO markdown/bold/formatting)
+   - Use this exact structure:
+     Day [X]:
+     - [Topic]: [Time Allocation] (Theory/Practice/Revision)
+     - [Topic]: [Time Allocation] (Practice)
+     - [Activity]: [Time Allocation] (Exercise/Project)
+
+4. Special Considerations:
+   - Account for specified deadlines in date calculations
+   - Include spaced repetition for better retention
+   - Add progress checkpoints every 3 days
+"""
     model = genai.GenerativeModel ('gemini-pro')
-    response =  model.generate_content(prompt)
+    response =  model.generate_content(user_prompt)
     return response.text
 
 if __name__ == '__main__':
-    subjects = input("Subjects (comma separated): ").split(',')
-    hours = int(input("how many hours you will study: "))
-    deadlines = input("Deadlines (format 'Subject:YYYY-MM-DD ").split(',')
-
-    roadmap = generate_roadmap(subjects,hours,deadlines)
-    print("\n Your Study Roadmap: \n")
-    print(roadmap)
+    user_input = console.input("[bold green]Enter your goal (e.g., 'I want to learn ML in 10 days, 5 hours/day'): [/]")
+    
+    roadmap = generate_roadmap(user_input)
+    console.print("\n[bold cyan]Your Personalized Roadmap:[/]\n")
+    console.print(roadmap)
